@@ -73,6 +73,7 @@ if [ "$(id -u)" == "0" ]; then
 			h) helpPanel;;
 		esac
 	done
+	
 	if [ $parameter_counter -eq 0 ]; then
 		createTmpDirectory
 		configInterface
