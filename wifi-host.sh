@@ -27,11 +27,12 @@ function ctrl_c(){
 }
 
 function defoult(){
-	networkCard=$(cat $cardFile)
         tput cnorm;airmon-ng stop "${networkCard}mon" 2>/dev/null
-        echo -e "\n${yellowColour}[*]${endColour}${grayColour}Stop airmon-ng${endColour}"
-        echo -e "\n${yellowColour}[*]${endColour}${grayColour}Cursor visible${endColour}"
-	exit 0
+        echo -e "${yellowColour}[*]${endColour}${grayColour}Stop airmon-ng${endColour}"
+        sleep 1
+        echo -e "${yellowColour}[*]${endColour}${grayColour}Cursor visible${endColour}"
+        sleep 1
+        exit 0
 }
 
 function banner(){
@@ -73,18 +74,18 @@ function hostDeauthentication(){
 }
 
 if [ "$(id -u)" == "0" ]; then
-	declare -i parameter_counter=0; while getopts ":b:c:s:m:h:" arg; do
-		case $arg in
-			b) BSSID=$OPTARG; let parameter_counter+=1 ;;
-			c) CH=$OPTARG; let parameter_counter+=1 ;;
-			s) ST=$OPTARG; let parameter_counter+=2 ;;
-			m) mode=$OPTARG;;
-			h) helpPanel;;
-		esac
-	done
-	if [ "$mode" == "defoult" ]; then
-		defoult
-	fi
+        declare -i parameter_counter=0; while getopts ":b:c:s:d:h:" arg; do
+                case $arg in
+                        b) BSSID=$OPTARG; let parameter_counter+=1 ;;
+                        c) CH=$OPTARG; let parameter_counter+=1 ;;
+                        s) ST=$OPTARG; let parameter_counter+=2 ;;
+                        d) networkCard=$OPTARG; MonitorMode='OFF';;
+                        h) helpPanel;;
+                esac
+        done
+        if [ "$MonitorMode" == "OFF" ]; then
+                defoult
+        fi
 
 	if [ $parameter_counter -eq 0 ]; then
 		createTmpDirectory
