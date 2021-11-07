@@ -216,7 +216,7 @@ function attackHandshake(){
 
 function attackPMKID(){
 	echo "PMKID"
-	xterm -hold -e "hcxdumptool -i ${networkCard}mon --enable_status=1 -o Captura"
+	xterm -hold -e "hcxdumptool -i ${networkCard}mon --enable_status=1 -o Captura" &
 	
 	echo "1" && read
 	hcxpcapngtool --pmkid=myHashes Captura
