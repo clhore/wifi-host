@@ -22,7 +22,7 @@ function ctrl_c(){
 
 function dependencies(){
 	tput civis
-	clear; dependencies=(xterm aircrack-ng hcxtools hcxdumptool hashcat)
+	clear; dependencies=(xterm aircrack-ng hcxdumptool hashcat)
 
 	echo -e "${yellowColour}[*]${endColour}${grayColour} Comprobando programas necesarios...${endColour}"
 	sleep 2
