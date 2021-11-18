@@ -24,7 +24,10 @@ function dependencies(){
 	tput civis
 	clear; dependencies=(xterm aircrack-ng hcxdumptool hashcat)
 
-	echo -e "${yellowColour}[*]${endColour}${grayColour} Comprobando programas necesarios...${endColour}"
+	echo -ne "${yellowColour}[*]${endColour}${grayColour} Comprobando programas necesarios...${endColour}";
+	echo -n = ;
+	sleep 3 & while [ "$(ps a | awk '{print $1}' | grep $!)" ] ; do for X in '-' '\' '|' '/'; do echo -en "\b$X"; sleep 0.1; done; done 
+	echo ""
 	sleep 2
 
 	for program in "${dependencies[@]}"; do
