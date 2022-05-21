@@ -384,7 +384,7 @@ if [ "$(id -u)" == "0" ]; then
 		num=$(echo "$MORE_OPT" | cut -d "," -f 3); #MORE_OPT="mode-term"
 	fi
 
-	until [[ $SYSTEM_USER =~ (arch|debian|ubuntu/fedora) ]]; do
+	until [[ $SYSTEM_USER =~ (arch|debian|ubuntu|fedora) ]]; do
                 echo -ne "${yellowColour}[*] Sistema operativo [arch/debian/ubuntu/fedora]: ${endColour}" & read SYSTEM_USER
 
                 if [ "$SYSTEM_USER" == "0" ]; then SYSTEM_USER="arch"; fi
