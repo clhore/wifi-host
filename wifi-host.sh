@@ -384,11 +384,14 @@ if [ "$(id -u)" == "0" ]; then
 		num=$(echo "$MORE_OPT" | cut -d "," -f 3); #MORE_OPT="mode-term"
 	fi
 
-	if [ "$SYSTEM_USER" == "" ]; then
-		until [[ $SYSTEM_USER =~ (arch|debian|ubuntu|fedora) ]]; do
-			echo -ne "${yellowColour}[*] Sistema operativo [arch/debian/ubuntu/fedora]: ${endColour}" & read SYSTEM_USER
-        	done
-	fi
+	until [[ $SYSTEM_USER =~ (arch|debian|ubuntu/fedora) ]]; do
+                echo -ne "${yellowColour}[*] Sistema operativo [arch/debian/ubuntu/fedora]: ${endColour}" & read SYSTEM_USER
+
+                if [ "$SYSTEM_USER" == "0" ]; then SYSTEM_USER="arch"; fi
+                if [ "$SYSTEM_USER" == "1" ]; then SYSTEM_USER="debian"; fi
+                if [ "$SYSTEM_USER" == "2" ]; then SYSTEM_USER="ubuntu"; fi
+		if [ "$SYSTEM_USER" == "3" ]; then SYSTEM_USER="fedora"; fi
+        done
 
 	#if [[ "$INSTALL" == "true" || "$INSTALL" == "TRUE" ]]; then dependencies; ctrl_c; fi
 
