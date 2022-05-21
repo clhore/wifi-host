@@ -91,13 +91,13 @@ function interfaceModeMonitor(){
 	ip addr list ${networkCard}mon >/dev/null 2>&1
 
 	if [ "$(echo $?)" -eq "0" ]; then
-		echo -e "${readColour}::${endColour} ${grayColour}Network cart modo monitor${endColour}"
+		echo -e "${redColour}::${endColour} ${grayColour}Network cart modo monitor${endColour}"
 		ip link set ${networkCard}mon down >/dev/null 2>&1; macchanger -a ${networkCard}mon >/dev/null 2>&1
 		ip link set ${networkCard}mon up >/dev/null 2>&1; sleep 0.25
-		echo -e "${readColour}::${endColour} ${grayColour}Network cart MAC aleatoria${endColour}"
+		echo -e "${redColour}::${endColour} ${grayColour}Network cart MAC aleatoria${endColour}"
 		codeCheck=0
 	else
-		echo -e "${readColour}::Error${endColour}"
+		echo -e "${redColour}::Error${endColour}"
 		codeCheck=1
 	fi
 }
